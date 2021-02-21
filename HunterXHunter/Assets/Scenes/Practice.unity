@@ -132,7 +132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_LocalPosition.x
@@ -175,9 +175,13 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 7ec65f92d2599774fb4892a0b0f9470b, type: 2}
+    - target: {fileID: -7511558181221131132, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 77bed50c510e32f4da34d6e39dbd261f, type: 2}
+      objectReference: {fileID: 2100000, guid: 5619ef0cfda6f3e4c9a9ddd60bd87960, type: 2}
     - target: {fileID: 919132149155446097, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_Name
       value: Foliage
@@ -271,11 +275,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 16.1, y: 12.72, z: 11.45}
+  m_LocalPosition: {x: 59.5, y: 40.9, z: 42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -370,7 +374,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e6ad2a7106227c459aa4b7cbc034040, type: 3}
+  m_Script: {fileID: 11500000, guid: 0192788bde239d74b8860e1fdf70ab2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mouseSensitivity: 1000
@@ -499,7 +503,7 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 3.8
+  m_Height: 4.5
   m_Radius: 0.6
   m_SlopeLimit: 45
   m_StepOffset: 0.7
@@ -514,7 +518,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1723713123}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.11290033, y: 2.31, z: -0.076823115}
+  m_LocalPosition: {x: -0.11290033, y: 1.99, z: -0.076823115}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 963194228}
@@ -532,7 +536,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1723713123}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5ddefd9700bd194f859434b8888e846, type: 3}
+  m_Script: {fileID: 11500000, guid: 85630c0441b69d540b87e8b60e650ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 1723713124}
@@ -568,7 +572,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1823772691}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.772, z: 0}
+  m_LocalPosition: {x: 0, y: -1.786, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1723713125}
@@ -626,7 +630,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: -2505642851634945670, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
