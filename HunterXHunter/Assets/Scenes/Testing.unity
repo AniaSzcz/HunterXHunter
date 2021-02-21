@@ -136,7 +136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 63.839035
+      value: 10.58
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_LocalPosition.y
@@ -144,7 +144,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 54.926178
+      value: 13.04
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fd000d9a4aacc1e4ea13d254278d0a53, type: 3}
       propertyPath: m_LocalRotation.w
@@ -503,7 +503,7 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 4.5
+  m_Height: 3.4
   m_Radius: 0.6
   m_SlopeLimit: 45
   m_StepOffset: 0.7
@@ -544,7 +544,7 @@ MonoBehaviour:
   gravity: -19.62
   jumpHeight: 3
   groundCheck: {fileID: 1823772692}
-  groundDistance: 0.4
+  groundDistance: 0.2
   groundMask:
     serializedVersion: 2
     m_Bits: 64
