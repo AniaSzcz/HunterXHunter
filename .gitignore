@@ -69,3 +69,10 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+HunterXHunter/Library
+HunterXHunter/Logs
+HunterXHunter/Temp
+HunterXHunter/obj/Debug/Assembly-CSharp.csprojAssemblyReference.cache
+HunterXHunter/Library
+HunterXHunter/obj/Debug/Assembly-CSharp.csprojAssemblyReference.cache
+HunterXHunter/Logs
