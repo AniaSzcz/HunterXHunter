@@ -21,8 +21,11 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundMask;
     Vector3 velocity;
     bool isGrounded;
+    // Climbing ---------------------------------------------------------
+    public bool collisionHappened;
+    bool pressedE = false;
 
-    // States ------------------------------------------------------------
+    // States -----------------------------------------------------------
     public enum myStates
     {
         Standing = 0,
@@ -35,9 +38,17 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Climbing state activation happens remotely through individual trees
         
-        
+        // Detecting if we've hit "e" to climb the tree and going into climbing state if its true
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            pressedE = true;
+        }
+        if (collisionHappened == true && pressedE == true && state != myStates.Climbing)
+        {
+            state = myStates.Climbing;
+            pressedE = false;
+        }
         
         switch (state)
         {
@@ -69,11 +80,31 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
-                Debug.Log("It worked");
+                if (pressedE == true)
+                {
+                    state = myStates.Walking;
+                    pressedE = false;
+                }
 
-                break;
+                break;       
+        }
+            
 
-                
+
+    }
+    // Detecting if we've hit any trees
+    void OnTriggerEnter(Collider collision)
+    {
+        if (collision.gameObject.tag == "Tree")
+        {
+            collisionHappened = true;
+        }
+    }
+    void OnTriggerExit(Collider collision)
+    {
+        if (collision.gameObject.tag == "Tree")
+        {
+            collisionHappened = false;
         }
     }
 
