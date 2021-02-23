@@ -22,8 +22,10 @@ public class PlayerMovement : MonoBehaviour
     Vector3 velocity;
     bool isGrounded;
     // Climbing ---------------------------------------------------------
-    public bool collisionHappened;
     bool pressedE = false;
+    bool touchingTree;
+    public Transform treeDetection;
+    public LayerMask treeMask;
     public float climbingSpeed = 3f;
 
     // States -----------------------------------------------------------
@@ -39,18 +41,23 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        // Climbing state -----------------------------------------------
         
         // Detecting if we've hit "e" to climb the tree and going into climbing state if its true
         if (Input.GetKeyDown(KeyCode.E))
         {
             pressedE = true;
         }
-        if (collisionHappened == true && pressedE == true && state != myStates.Climbing)
+        // Drawing an invisible circle around the empty TreeDetection and seeing when that collides with the tree
+        touchingTree = Physics.CheckSphere(treeDetection.position, 1, treeMask);
+        // If it's touching, go into the climbing state
+        if(touchingTree == true && pressedE == true && state != myStates.Climbing)
         {
             state = myStates.Climbing;
             pressedE = false;
-        }
-        
+        } 
+
         switch (state)
         {
             case myStates.Walking:  
@@ -102,20 +109,4 @@ public class PlayerMovement : MonoBehaviour
 
 
     }
-    // Detecting if we've hit any trees
-    void OnTriggerEnter(Collider collision)
-    {
-        if (collision.gameObject.tag == "Tree")
-        {
-            collisionHappened = true;
-        }
-    }
-    void OnTriggerExit(Collider collision)
-    {
-        if (collision.gameObject.tag == "Tree")
-        {
-            collisionHappened = false;
-        }
-    }
-
 }
