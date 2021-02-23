@@ -23,10 +23,12 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
     // Climbing ---------------------------------------------------------
     bool pressedE = false;
+    public bool collisionHappened;
     bool touchingTree;
     public Transform treeDetection;
     public LayerMask treeMask;
     public float climbingSpeed = 3f;
+    public GameObject collisionObject;
 
     // States -----------------------------------------------------------
     public enum myStates
@@ -41,7 +43,6 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         // Climbing state -----------------------------------------------
         
         // Detecting if we've hit "e" to climb the tree and going into climbing state if its true
@@ -49,14 +50,15 @@ public class PlayerMovement : MonoBehaviour
         {
             pressedE = true;
         }
-        // Drawing an invisible circle around the empty TreeDetection and seeing when that collides with the tree
-        touchingTree = Physics.CheckSphere(treeDetection.position, 1, treeMask);
-        // If it's touching, go into the climbing state
-        if(touchingTree == true && pressedE == true && state != myStates.Climbing)
+        else
+        {
+            pressedE = false;
+        }
+        if (collisionHappened == true && pressedE == true && state != myStates.Climbing)
         {
             state = myStates.Climbing;
             pressedE = false;
-        } 
+        }
 
         switch (state)
         {
@@ -88,25 +90,41 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
+                Vector3 direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
+                RaycastHit nextPlace;
+                Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+                if (nextPlace.collider.CompareTag("Tree"))
+                {
+                    Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * 0.6f;
+                    transform.position = nextPlace.point + newPosition;
+                }
+
                 if (Input.GetKey(KeyCode.W))
                 {
                     transform.Translate(0f, climbingSpeed * Time.deltaTime, 0f);
                 }
-
-
-
-
-
                 if (pressedE == true)
                 {
                     state = myStates.Walking;
                     pressedE = false;
                 }
-
-                break;       
+                break;     
         }
-            
-
-
+    }
+    // Detecting if we've hit any trees
+    void OnTriggerEnter(Collider collision)
+    {
+        if (collision.gameObject.tag == "Tree")
+        {
+            collisionHappened = true;
+            collisionObject = collision.gameObject;
+        }
+    }
+    void OnTriggerExit(Collider collision)
+    {
+        if (collision.gameObject.tag == "Tree")
+        {
+            collisionHappened = false;
+        }
     }
 }
