@@ -17,13 +17,14 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 3f;
     public Transform groundCheck;
-    public float groundDistance = 0.4f;
+    public float groundDistance = 0.1f;
     public LayerMask groundMask;
     Vector3 velocity;
     bool isGrounded;
     // Climbing ---------------------------------------------------------
     public bool collisionHappened;
     bool pressedE = false;
+    public float climbingSpeed = 3f;
 
     // States -----------------------------------------------------------
     public enum myStates
@@ -79,6 +80,15 @@ public class PlayerMovement : MonoBehaviour
                 break;
             
             case myStates.Climbing:
+
+                if (Input.GetKey(KeyCode.W))
+                {
+                    transform.Translate(0f, climbingSpeed * Time.deltaTime, 0f);
+                }
+
+
+
+
 
                 if (pressedE == true)
                 {
