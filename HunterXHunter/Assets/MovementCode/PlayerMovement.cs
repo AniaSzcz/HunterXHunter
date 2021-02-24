@@ -27,8 +27,11 @@ public class PlayerMovement : MonoBehaviour
     bool touchingTree;
     public Transform treeDetection;
     public LayerMask treeMask;
-    public float climbingSpeed = 3f;
-    public GameObject collisionObject;
+    public float climbingSpeed = 1f;
+    GameObject collisionObject;
+    Vector3 direction;
+    RaycastHit nextPlace;
+    float radiusOfPlayer = 0.6f;
 
     // States -----------------------------------------------------------
     public enum myStates
@@ -54,10 +57,18 @@ public class PlayerMovement : MonoBehaviour
         {
             pressedE = false;
         }
-        if (collisionHappened == true && pressedE == true && state != myStates.Climbing)
+        if (collisionHappened && pressedE && state != myStates.Climbing)
         {
             state = myStates.Climbing;
             pressedE = false;
+
+            direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
+            Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+            if (nextPlace.collider.CompareTag("Tree"))
+            {
+                Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
+                transform.position = nextPlace.point + newPosition;
+            }
         }
 
         switch (state)
@@ -90,19 +101,71 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
-                Vector3 direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
-                RaycastHit nextPlace;
-                Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-                if (nextPlace.collider.CompareTag("Tree"))
-                {
-                    Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * 0.6f;
-                    transform.position = nextPlace.point + newPosition;
-                }
-
                 if (Input.GetKey(KeyCode.W))
                 {
                     transform.Translate(0f, climbingSpeed * Time.deltaTime, 0f);
                 }
+
+
+
+                if (Input.GetKey(KeyCode.D))
+                {
+                    // resetting direction
+                    direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
+                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+                    if (nextPlace.collider.CompareTag("Tree"))
+                    {
+                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
+                        transform.position = nextPlace.point + newPosition;
+                    }
+
+                    // increasing the angle of the vector3 direction and then raycasting to that point
+                    direction = Quaternion.Euler(0, 10, 0) * direction;
+                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+                    Debug.DrawRay(treeDetection.transform.position, direction, Color.red);
+                    
+                    if (nextPlace.collider != null && nextPlace.collider.CompareTag("Tree"))
+                    {
+                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
+                        transform.position = nextPlace.point + newPosition;
+                    }
+                    else if (nextPlace.collider == null)
+                    {
+                        Debug.Log("BAd");
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.A))
+                {
+                    // resetting direction
+                    direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
+                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+                    if (nextPlace.collider.CompareTag("Tree"))
+                    {
+                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
+                        transform.position = nextPlace.point + newPosition;
+                    }
+
+                    // increasing the angle of the vector3 direction and then raycasting to that point
+                    direction = Quaternion.Euler(0, -10, 0) * direction;
+                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
+                    Debug.DrawRay(treeDetection.transform.position, direction, Color.red);
+                    
+                    if (nextPlace.collider != null && nextPlace.collider.CompareTag("Tree"))
+                    {
+                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
+                        transform.position = nextPlace.point + newPosition;
+                    }
+                    else if (nextPlace.collider == null)
+                    {
+                        Debug.Log("BAd");
+                    }
+                }
+                
+                
+
+
+
                 if (pressedE == true)
                 {
                     state = myStates.Walking;
