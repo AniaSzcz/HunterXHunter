@@ -29,7 +29,8 @@ public class PlayerMovement : MonoBehaviour
     public Camera camera1;
     Vector3 initialPosition;
     Vector3 lookAt;
-    Vector3 rightLookAt;
+    float smoothingSpeed = 3f;
+    Vector3 normalDirection;
     // States -----------------------------------------------------------
     public enum myStates
     {
@@ -57,17 +58,14 @@ public class PlayerMovement : MonoBehaviour
         if (pressedE && state != myStates.Climbing)
         {
             Vector3 firstDirection = new Vector3(camera1.transform.forward.x, 0, camera1.transform.forward.z);
-            Physics.Raycast(transform.position, firstDirection, out hit, 0.8f);
+            Physics.Raycast(transform.position, firstDirection, out hit, 1f);
                 if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
                 {          
-                    //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                    Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
-                    initialPosition = new Vector3(newPosition.x, transform.position.y, newPosition.z);
-                    transform.position = initialPosition;
-
                     // making the player face the hit point
                     lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
                     transform.LookAt(lookAt);
+
+                    normalDirection = hit.normal.normalized; 
 
                     state = myStates.Climbing;
                     pressedE = false;
@@ -108,6 +106,12 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
+                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)
+                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                initialPosition = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                initialPosition = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * smoothingSpeed);
+                transform.position = initialPosition;
+
                 Debug.DrawRay(transform.position, direction, Color.yellow);
 
                 if (Input.GetKey(KeyCode.W))
@@ -143,10 +147,19 @@ public class PlayerMovement : MonoBehaviour
             direction = Quaternion.Euler(0, 0.5f, 0) * direction;
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
             if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-            {          
+            {
+                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
-                transform.position = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
+                Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                transform.position = newPosition1;
+
+                Debug.DrawRay(transform.position, newPosition1 - transform.position, Color.blue);
+                Debug.DrawRay(hit.point, hit.normal, Color.green);
+
+                lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                transform.LookAt(lookAt);
+
             }  
         }
     }
@@ -159,12 +172,17 @@ public class PlayerMovement : MonoBehaviour
             direction = Quaternion.Euler(0, -0.5f, 0) * direction;
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
             if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-            {          
+            {
+                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
-                transform.position = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
+                Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                transform.position = newPosition1;
+
+                lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                transform.LookAt(lookAt);
             }  
-        }
+        }   
     }
     void ClimbingUp()
     {
@@ -172,12 +190,13 @@ public class PlayerMovement : MonoBehaviour
         Physics.Raycast(transform.position, direction, out hit, 0.8f);         
         if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
         {
-            direction = new Vector3(direction.x, direction.y + 0.01f, direction.z); //<-------- this needs work
+            direction = new Vector3(direction.x, direction.y + 0.01f, direction.z);
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
             if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-            {          
+            {
+                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
                 transform.position = newPosition;
             }  
         }
