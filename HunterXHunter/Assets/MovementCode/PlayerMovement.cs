@@ -23,16 +23,13 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
     // Climbing ---------------------------------------------------------
     bool pressedE = false;
-    public bool collisionHappened;
-    bool touchingTree;
-    public Transform treeDetection;
-    public LayerMask treeMask;
-    public float climbingSpeed = 1f;
-    GameObject collisionObject;
     Vector3 direction;
-    RaycastHit nextPlace;
+    public RaycastHit hit;
     float radiusOfPlayer = 0.6f;
-
+    public Camera camera1;
+    Vector3 initialPosition;
+    Vector3 lookAt;
+    Vector3 rightLookAt;
     // States -----------------------------------------------------------
     public enum myStates
     {
@@ -57,18 +54,28 @@ public class PlayerMovement : MonoBehaviour
         {
             pressedE = false;
         }
-        if (collisionHappened && pressedE && state != myStates.Climbing)
+        if (pressedE && state != myStates.Climbing)
         {
-            state = myStates.Climbing;
-            pressedE = false;
+            Vector3 firstDirection = new Vector3(camera1.transform.forward.x, 0, camera1.transform.forward.z);
+            Physics.Raycast(transform.position, firstDirection, out hit, 0.8f);
+                if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+                {          
+                    //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                    Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                    initialPosition = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                    transform.position = initialPosition;
 
-            direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
-            Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-            if (nextPlace.collider.CompareTag("Tree"))
-            {
-                Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
-                transform.position = nextPlace.point + newPosition;
-            }
+                    // making the player face the hit point
+                    lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                    transform.LookAt(lookAt);
+
+                    state = myStates.Climbing;
+                    pressedE = false;
+                }
+                else if (hit.collider == null)
+                {
+                    Debug.Log("Not in range");
+                }
         }
 
         switch (state)
@@ -101,93 +108,78 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
+                Debug.DrawRay(transform.position, direction, Color.yellow);
+
                 if (Input.GetKey(KeyCode.W))
                 {
-                    transform.Translate(0f, climbingSpeed * Time.deltaTime, 0f);
+                    ClimbingUp();
                 }
-
-
 
                 if (Input.GetKey(KeyCode.D))
                 {
-                    // resetting direction
-                    direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
-                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-                    if (nextPlace.collider.CompareTag("Tree"))
-                    {
-                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
-                        transform.position = nextPlace.point + newPosition;
-                    }
-
-                    // increasing the angle of the vector3 direction and then raycasting to that point
-                    direction = Quaternion.Euler(0, 10, 0) * direction;
-                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-                    Debug.DrawRay(treeDetection.transform.position, direction, Color.red);
-                    
-                    if (nextPlace.collider != null && nextPlace.collider.CompareTag("Tree"))
-                    {
-                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
-                        transform.position = nextPlace.point + newPosition;
-                    }
-                    else if (nextPlace.collider == null)
-                    {
-                        Debug.Log("BAd");
-                    }
+                    ClimbingRight();
                 }
 
                 if (Input.GetKey(KeyCode.A))
                 {
-                    // resetting direction
-                    direction = new Vector3(collisionObject.transform.position.x - treeDetection.transform.position.x, 0f, collisionObject.transform.position.z - treeDetection.transform.position.z);
-                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-                    if (nextPlace.collider.CompareTag("Tree"))
-                    {
-                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
-                        transform.position = nextPlace.point + newPosition;
-                    }
-
-                    // increasing the angle of the vector3 direction and then raycasting to that point
-                    direction = Quaternion.Euler(0, -10, 0) * direction;
-                    Physics.Raycast(treeDetection.transform.position, direction, out nextPlace);
-                    Debug.DrawRay(treeDetection.transform.position, direction, Color.red);
-                    
-                    if (nextPlace.collider != null && nextPlace.collider.CompareTag("Tree"))
-                    {
-                        Vector3 newPosition = ((treeDetection.transform.position - nextPlace.point).normalized) * radiusOfPlayer;
-                        transform.position = nextPlace.point + newPosition;
-                    }
-                    else if (nextPlace.collider == null)
-                    {
-                        Debug.Log("BAd");
-                    }
+                    ClimbingLeft();
                 }
-                
-                
-
-
 
                 if (pressedE == true)
                 {
                     state = myStates.Walking;
                     pressedE = false;
                 }
+
                 break;     
         }
     }
-    // Detecting if we've hit any trees
-    void OnTriggerEnter(Collider collision)
+    void ClimbingRight()
     {
-        if (collision.gameObject.tag == "Tree")
+        direction = hit.point - transform.position;
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
         {
-            collisionHappened = true;
-            collisionObject = collision.gameObject;
+            direction = Quaternion.Euler(0, 0.5f, 0) * direction;
+            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+            {          
+                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                transform.position = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+            }  
         }
     }
-    void OnTriggerExit(Collider collision)
+    void ClimbingLeft()
     {
-        if (collision.gameObject.tag == "Tree")
+        direction = hit.point - transform.position;
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
         {
-            collisionHappened = false;
+            direction = Quaternion.Euler(0, -0.5f, 0) * direction;
+            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+            {          
+                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                transform.position = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+            }  
+        }
+    }
+    void ClimbingUp()
+    {
+        direction = hit.point - transform.position;
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+        {
+            direction = new Vector3(direction.x, direction.y + 0.01f, direction.z); //<-------- this needs work
+            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+            {          
+                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                transform.position = newPosition;
+            }  
         }
     }
 }
