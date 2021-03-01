@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     }
     // Walking ---------------------------------------------------------
     public CharacterController controller;
-    public float speed = 12f;
+    float speed;
     public float gravity = -9.81f;
     public float jumpHeight = 3f;
     public Transform groundCheck;
@@ -30,16 +30,23 @@ public class PlayerMovement : MonoBehaviour
     Vector3 initialPosition;
     Vector3 lookAt;
     float smoothingSpeed = 3f;
+    float intializeSmoothingSpeed = 10f;
     Vector3 normalDirection;
+    bool initializeClimbing = false;
+    Vector3 checkingVector;
+    
+    // Running ----------------------------------------------------------
+    bool pressedCtrl = false;
     // States -----------------------------------------------------------
     public enum myStates
     {
         Standing = 0,
         Walking,
         Climbing,
+        Running,
     }
     public myStates state = myStates.Walking;
-    
+
 
     // Update is called once per frame
     void Update()
@@ -59,26 +66,43 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 firstDirection = new Vector3(camera1.transform.forward.x, 0, camera1.transform.forward.z);
             Physics.Raycast(transform.position, firstDirection, out hit, 1f);
-                if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-                {          
-                    // making the player face the hit point
-                    lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
-                    transform.LookAt(lookAt);
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+            {          
+                // making the player face the hit point
+                lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                transform.LookAt(lookAt);
 
-                    normalDirection = hit.normal.normalized; 
+                normalDirection = hit.normal.normalized; 
 
-                    state = myStates.Climbing;
-                    pressedE = false;
-                }
-                else if (hit.collider == null)
-                {
-                    Debug.Log("Not in range");
-                }
+                state = myStates.Climbing;
+                pressedE = false;
+                initializeClimbing = true;
+            }
+            else if (hit.collider == null)
+            {
+                Debug.Log("Not in range");
+            }
+        }
+
+        // Running state -----------------------------------------------------
+
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
+            pressedCtrl = true;
+        }
+        else
+        {
+            pressedCtrl = false;
+        }
+        if (pressedCtrl == true)
+        {
+            state = myStates.Running;
         }
 
         switch (state)
         {
-            case myStates.Walking:  
+            case myStates.Walking:
+                speed = 12f; 
                 
                 isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
                 if(isGrounded && velocity.y < 0)
@@ -106,36 +130,106 @@ public class PlayerMovement : MonoBehaviour
             
             case myStates.Climbing:
 
-                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)
-                Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
-                initialPosition = new Vector3(newPosition.x, transform.position.y, newPosition.z);
-                initialPosition = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * smoothingSpeed);
-                transform.position = initialPosition;
-
-                Debug.DrawRay(transform.position, direction, Color.yellow);
-
-                if (Input.GetKey(KeyCode.W))
+                if (initializeClimbing == true)
                 {
-                    ClimbingUp();
+                    //Making the player go to the point 0.6 away from the hit point (so there's no clipping)
+                    Vector3 newPosition = hit.point + (hit.normal.normalized * radiusOfPlayer);
+                    initialPosition = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                    Vector3 initialPosition2 = Vector3.Lerp(transform.position, initialPosition, Time.deltaTime * intializeSmoothingSpeed);
+                    transform.position = initialPosition2;
+
+                    lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                    transform.LookAt(lookAt);
+
+                    checkingVector = new Vector3(hit.point.x, 0, hit.point.z);
+
+                    if (Vector3.Distance(transform.position, initialPosition) <= 0.01f)
+                    {
+                        initializeClimbing = false;
+                    }
                 }
 
-                if (Input.GetKey(KeyCode.D))
+                if (initializeClimbing == false)
                 {
-                    ClimbingRight();
+                    if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+                    {
+                        normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
+                        //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                        Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
+                        Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
+                        transform.position = newPosition1;
+
+                        lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+                        transform.LookAt(lookAt);
+                    }                 
+
+                    Debug.DrawRay(transform.position, direction, Color.yellow);
+
+                    if (Input.GetKey(KeyCode.W))
+                    {
+                        ClimbingUp();
+                    }
+
+                    if (Input.GetKey(KeyCode.D))
+                    {
+                        ClimbingRight();
+                    }
+
+                    if (Input.GetKey(KeyCode.A))
+                    {
+                        ClimbingLeft();
+                    }
+
+                    if (Input.GetKey(KeyCode.S))
+                    {
+                        ClimbingDown();
+                    }
+
+                    if (pressedE == true)
+                    {
+                        state = myStates.Walking;
+                        pressedE = false;
+                    }
                 }
 
-                if (Input.GetKey(KeyCode.A))
+                break;
+                
+            case myStates.Running:
+
+                speed = 24f;
+
+                isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+                if(isGrounded && velocity.y < 0)
                 {
-                    ClimbingLeft();
+                    velocity.y = -2f;
                 }
 
-                if (pressedE == true)
+                float runningX = Input.GetAxis("Horizontal");
+                float runningZ = Input.GetAxis("Vertical");
+
+                Vector3 runningMove = transform.right * runningX + transform.forward * runningZ;
+
+                controller.Move(runningMove * speed * Time.deltaTime);
+
+                velocity.y += gravity * Time.deltaTime;
+
+                controller.Move(velocity * Time.deltaTime);
+
+                if (Input.GetKey(KeyCode.LeftControl))
+                {
+                    pressedCtrl = true;
+                }
+                else
+                {
+                    pressedCtrl = false;
+                }
+                if (pressedCtrl == false)
                 {
                     state = myStates.Walking;
-                    pressedE = false;
-                }
-
-                break;     
+                }                
+                
+                break;
+     
         }
     }
     void ClimbingRight()
@@ -146,21 +240,6 @@ public class PlayerMovement : MonoBehaviour
         {
             direction = Quaternion.Euler(0, 0.5f, 0) * direction;
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
-            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-            {
-                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
-                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
-                Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
-                transform.position = newPosition1;
-
-                Debug.DrawRay(transform.position, newPosition1 - transform.position, Color.blue);
-                Debug.DrawRay(hit.point, hit.normal, Color.green);
-
-                lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
-                transform.LookAt(lookAt);
-
-            }  
         }
     }
     void ClimbingLeft()
@@ -171,17 +250,6 @@ public class PlayerMovement : MonoBehaviour
         {
             direction = Quaternion.Euler(0, -0.5f, 0) * direction;
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
-            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-            {
-                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
-                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
-                Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
-                transform.position = newPosition1;
-
-                lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
-                transform.LookAt(lookAt);
-            }  
         }   
     }
     void ClimbingUp()
@@ -201,4 +269,22 @@ public class PlayerMovement : MonoBehaviour
             }  
         }
     }
+    void ClimbingDown()
+    {
+        direction = hit.point - transform.position;
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+        {
+            direction = new Vector3(direction.x, direction.y - 0.01f, direction.z);
+            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+            {
+                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
+                //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
+                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
+                transform.position = newPosition;
+            }  
+        }       
+    }
+    
 }
