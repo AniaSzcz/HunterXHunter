@@ -34,9 +34,14 @@ public class PlayerMovement : MonoBehaviour
     Vector3 normalDirection;
     bool initializeClimbing = false;
     Vector3 checkingVector;
-    
+    float rightLeftSpeed = 70f;
+    float upDownSpeed = 2f;
     // Running ----------------------------------------------------------
     bool pressedCtrl = false;
+    // Debugging --------------------------------------------------------
+    bool pressedR = false;
+    Vector3 getUp;
+    Vector3 newStart;
     // States -----------------------------------------------------------
     public enum myStates
     {
@@ -44,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
         Walking,
         Climbing,
         Running,
+        Debugging,
     }
     public myStates state = myStates.Walking;
 
@@ -94,6 +100,7 @@ public class PlayerMovement : MonoBehaviour
         {
             pressedCtrl = false;
         }
+        
         if (pressedCtrl == true)
         {
             state = myStates.Running;
@@ -102,28 +109,24 @@ public class PlayerMovement : MonoBehaviour
         switch (state)
         {
             case myStates.Walking:
+
+                transform.rotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));
                 speed = 12f; 
-                
-                isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+                isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance);
                 if(isGrounded && velocity.y < 0)
                 {
                     velocity.y = -2f;
                 }
-
                 float x = Input.GetAxis("Horizontal");
                 float z = Input.GetAxis("Vertical");
 
                 Vector3 move = transform.right * x + transform.forward * z;
-
                 controller.Move(move * speed * Time.deltaTime);
-
                 if(Input.GetButtonDown("Jump") && isGrounded)
                 {
                     velocity.y = Mathf.Sqrt(jumpHeight * -2 * gravity);
                 }
-
                 velocity.y += gravity * Time.deltaTime;
-
                 controller.Move(velocity * Time.deltaTime);
                 
                 break;
@@ -159,10 +162,11 @@ public class PlayerMovement : MonoBehaviour
                         Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
                         transform.position = newPosition1;
 
-                        lookAt = new Vector3(hit.point.x, transform.position.y, hit.point.z);
-                        transform.LookAt(lookAt);
-                    }                 
+                        transform.LookAt(hit.point);
+                        transform.rotation = Quaternion.Euler(new Vector3(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0));
 
+                    }
+                                     
                     Debug.DrawRay(transform.position, direction, Color.yellow);
 
                     if (Input.GetKey(KeyCode.W))
@@ -172,12 +176,12 @@ public class PlayerMovement : MonoBehaviour
 
                     if (Input.GetKey(KeyCode.D))
                     {
-                        ClimbingRight();
+                        ClimbRightLeft(true);
                     }
 
                     if (Input.GetKey(KeyCode.A))
                     {
-                        ClimbingLeft();
+                        ClimbRightLeft(false);
                     }
 
                     if (Input.GetKey(KeyCode.S))
@@ -198,7 +202,7 @@ public class PlayerMovement : MonoBehaviour
 
                 speed = 24f;
 
-                isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+                isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance);
                 if(isGrounded && velocity.y < 0)
                 {
                     velocity.y = -2f;
@@ -229,36 +233,51 @@ public class PlayerMovement : MonoBehaviour
                 }                
                 
                 break;
-     
-        }
-    }
-    void ClimbingRight()
-    {
-        direction = hit.point - transform.position;
-        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
-        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-        {
-            direction = Quaternion.Euler(0, 0.5f, 0) * direction;
-            Physics.Raycast(transform.position, direction, out hit, 0.8f);
-        }
-    }
-    void ClimbingLeft()
-    {
-        direction = hit.point - transform.position;
-        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
-        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
-        {
-            direction = Quaternion.Euler(0, -0.5f, 0) * direction;
-            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            case myStates.Debugging:
+
+                Debug.DrawRay(newStart, direction, Color.magenta);
+                
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    pressedR = true;
+                }
+                else
+                {
+                    pressedR = false;
+                }
+                
+                if (pressedR == true)
+                {
+                    state = myStates.Walking;
+                    pressedR = false;
+                }
+
+                break;
         }   
     }
+    void ClimbRightLeft(bool right) // tr
+    {
+        direction = hit.point - transform.position;
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
+        {
+            direction = Quaternion.Euler(0, Time.deltaTime * rightLeftSpeed * (right ? 1f : -1f), 0) * direction;
+            Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            if (hit.collider == null)
+            {
+                direction = Quaternion.Euler(0, Time.deltaTime * rightLeftSpeed * (right ? -1f : 1f), 0) * direction;
+                Physics.Raycast(transform.position, direction, out hit, 0.8f);    
+            }
+        }  
+    }
+    
     void ClimbingUp()
     {
         direction = hit.point - transform.position;
         Physics.Raycast(transform.position, direction, out hit, 0.8f);         
         if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
         {
-            direction = new Vector3(direction.x, direction.y + 0.01f, direction.z);
+            direction = new Vector3(direction.x, direction.y + (Time.deltaTime * upDownSpeed * 1f), direction.z);
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
             if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
             {
@@ -266,6 +285,17 @@ public class PlayerMovement : MonoBehaviour
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
                 Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
                 transform.position = newPosition;
+            }
+            else if (hit.collider == null)
+            {            
+                direction = new Vector3(direction.x, direction.y - (Time.deltaTime * rightLeftSpeed * 1f) - 0.09f, direction.z);
+                newStart = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
+                Physics.Raycast(newStart, direction, out hit, 0.8f);
+                getUp = hit.point - transform.position;
+                getUp = new Vector3(getUp.x, getUp.y + 1.801f, getUp.z);
+                controller.Move(getUp);
+
+                state = myStates.Walking;
             }  
         }
     }
@@ -283,7 +313,12 @@ public class PlayerMovement : MonoBehaviour
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
                 Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
                 transform.position = newPosition;
-            }  
+            }
+            else if (hit.collider == null)
+            {                
+                direction = new Vector3(direction.x, direction.y + 0.01f, direction.z);
+                Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+            }    
         }       
     }
     
