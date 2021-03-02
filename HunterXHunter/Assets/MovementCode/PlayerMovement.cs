@@ -42,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
     bool pressedR = false;
     Vector3 getUp;
     Vector3 newStart;
+    Vector3 currentPosition;
     // States -----------------------------------------------------------
     public enum myStates
     {
@@ -165,6 +166,16 @@ public class PlayerMovement : MonoBehaviour
                         transform.LookAt(hit.point);
                         transform.rotation = Quaternion.Euler(new Vector3(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0));
 
+                        Debug.Log(transform.rotation.eulerAngles);
+                        if (transform.rotation.eulerAngles.x >= 45 && transform.rotation.eulerAngles.x <= 90)
+                        {
+                            getUp = hit.point - transform.position;
+                            getUp = new Vector3(getUp.x, getUp.y + 1.801f, getUp.z);
+                            currentPosition = transform.position;
+                            transform.position = transform.position + getUp;
+                            state = myStates.Walking;
+                        }
+
                     }
                                      
                     Debug.DrawRay(transform.position, direction, Color.yellow);
@@ -233,9 +244,10 @@ public class PlayerMovement : MonoBehaviour
                 }                
                 
                 break;
+            
             case myStates.Debugging:
 
-                Debug.DrawRay(newStart, direction, Color.magenta);
+                Debug.DrawRay(currentPosition, getUp, Color.magenta);
                 
                 if (Input.GetKeyDown(KeyCode.R))
                 {
@@ -274,21 +286,21 @@ public class PlayerMovement : MonoBehaviour
     void ClimbingUp()
     {
         direction = hit.point - transform.position;
-        Physics.Raycast(transform.position, direction, out hit, 0.8f);         
+        Physics.Raycast(transform.position, direction, out hit, 0.8f);
         if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
         {
             direction = new Vector3(direction.x, direction.y + (Time.deltaTime * upDownSpeed * 1f), direction.z);
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
             if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
             {
-                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);          
+                normalDirection = Vector3.Lerp(normalDirection, hit.normal.normalized, Time.deltaTime * smoothingSpeed);
                 //Making the player go to the point 0.6 away from the hit point (so there's no clipping)                       
-                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
+                Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);
                 transform.position = newPosition;
             }
             else if (hit.collider == null)
             {            
-                direction = new Vector3(direction.x, direction.y - (Time.deltaTime * rightLeftSpeed * 1f) - 0.09f, direction.z);
+                direction = new Vector3(direction.x, direction.y - (Time.deltaTime * upDownSpeed * 1f) - 0.09f, direction.z);
                 newStart = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
                 Physics.Raycast(newStart, direction, out hit, 0.8f);
                 getUp = hit.point - transform.position;
