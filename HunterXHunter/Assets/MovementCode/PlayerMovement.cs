@@ -36,11 +36,14 @@ public class PlayerMovement : MonoBehaviour
     Vector3 checkingVector;
     float rightLeftSpeed = 70f;
     float upDownSpeed = 2f;
+    Vector3 getUp;
+    Vector3 getUp2;
+    bool stopClimbing = false;
     // Running ----------------------------------------------------------
     bool pressedCtrl = false;
     // Debugging --------------------------------------------------------
     bool pressedR = false;
-    Vector3 getUp;
+
     Vector3 newStart;
     Vector3 currentPosition;
     // States -----------------------------------------------------------
@@ -153,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
                     }
                 }
 
-                if (initializeClimbing == false)
+                if (initializeClimbing == false && stopClimbing == false)
                 {
                     if (hit.collider != null && hit.collider.gameObject.tag == "Tree")
                     {
@@ -162,50 +165,53 @@ public class PlayerMovement : MonoBehaviour
                         Vector3 newPosition = hit.point + (normalDirection * radiusOfPlayer);  
                         Vector3 newPosition1 = new Vector3(newPosition.x, transform.position.y, newPosition.z);
                         transform.position = newPosition1;
-
                         transform.LookAt(hit.point);
                         transform.rotation = Quaternion.Euler(new Vector3(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y, 0));
-
-                        Debug.Log(transform.rotation.eulerAngles);
-                        if (transform.rotation.eulerAngles.x >= 45 && transform.rotation.eulerAngles.x <= 90)
-                        {
-                            getUp = hit.point - transform.position;
-                            getUp = new Vector3(getUp.x, getUp.y + 1.801f, getUp.z);
-                            currentPosition = transform.position;
-                            transform.position = transform.position + getUp;
-                            state = myStates.Walking;
-                        }
-
                     }
                                      
-                    Debug.DrawRay(transform.position, direction, Color.yellow);
+                        Debug.DrawRay(transform.position, direction, Color.yellow);
 
-                    if (Input.GetKey(KeyCode.W))
-                    {
-                        ClimbingUp();
-                    }
+                        if (Input.GetKey(KeyCode.W))
+                        {
+                            ClimbingUp();
+                        }
 
-                    if (Input.GetKey(KeyCode.D))
-                    {
-                        ClimbRightLeft(true);
-                    }
+                        if (Input.GetKey(KeyCode.D))
+                        {
+                            ClimbRightLeft(true);
+                        }
 
-                    if (Input.GetKey(KeyCode.A))
-                    {
-                        ClimbRightLeft(false);
-                    }
+                        if (Input.GetKey(KeyCode.A))
+                        {
+                            ClimbRightLeft(false);
+                        }
 
-                    if (Input.GetKey(KeyCode.S))
-                    {
-                        ClimbingDown();
-                    }
+                        if (Input.GetKey(KeyCode.S))
+                        {
+                            ClimbingDown();
+                        }
 
-                    if (pressedE == true)
-                    {
-                        state = myStates.Walking;
-                        pressedE = false;
-                    }
+                        if (pressedE == true)
+                        {
+                            state = myStates.Walking;
+                            pressedE = false;
+                        }
                 }
+
+                if (transform.rotation.eulerAngles.x >= 45 && transform.rotation.eulerAngles.x <= 90)
+                    {
+                        stopClimbing = true;
+                        getUp = hit.point;
+                        getUp = new Vector3(getUp.x, getUp.y + 1.801f, getUp.z);
+                        getUp2 = Vector3.Lerp(transform.position, getUp, Time.deltaTime * intializeSmoothingSpeed);
+                        transform.position = getUp2;
+                        Debug.Log(Vector3.Distance(transform.position, getUp));
+                        if (Vector3.Distance(transform.position, getUp) <= 0.05f)
+                        {
+                            stopClimbing = false;
+                            state = myStates.Walking;
+                        }
+                    }
 
                 break;
                 
@@ -246,8 +252,6 @@ public class PlayerMovement : MonoBehaviour
                 break;
             
             case myStates.Debugging:
-
-                Debug.DrawRay(currentPosition, getUp, Color.magenta);
                 
                 if (Input.GetKeyDown(KeyCode.R))
                 {
