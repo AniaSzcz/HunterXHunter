@@ -1,0 +1,13 @@
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.exe
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.deps.json
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.runtimeconfig.json
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.runtimeconfig.dev.json
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.dll
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\bin\Debug\netcoreapp3.1\HunterXHunterServer.pdb
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.csprojAssemblyReference.cache
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.AssemblyInfoInputs.cache
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.AssemblyInfo.cs
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.csproj.CoreCompileInputs.cache
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.dll
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.pdb
+C:\Dev\HunterXHunter\HunterXHunter\HunterXHunterServer\obj\Debug\netcoreapp3.1\HunterXHunterServer.genruntimeconfig.cache

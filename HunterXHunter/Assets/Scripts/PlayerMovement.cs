@@ -252,6 +252,8 @@ public class PlayerMovement : MonoBehaviour
                 break;
             
             case myStates.Debugging:
+
+                Debug.DrawRay(newStart, direction, Color.magenta);
                 
                 if (Input.GetKeyDown(KeyCode.R))
                 {
@@ -271,7 +273,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
         }   
     }
-    void ClimbRightLeft(bool right) // tr
+    void ClimbRightLeft(bool right) // right is true
     {
         direction = hit.point - transform.position;
         Physics.Raycast(transform.position, direction, out hit, 0.8f);         
@@ -279,11 +281,26 @@ public class PlayerMovement : MonoBehaviour
         {
             direction = Quaternion.Euler(0, Time.deltaTime * rightLeftSpeed * (right ? 1f : -1f), 0) * direction;
             Physics.Raycast(transform.position, direction, out hit, 0.8f);
+            // if (hit.collider == null)
+            // {
+            //     direction = Quaternion.Euler(0, Time.deltaTime * rightLeftSpeed * (right ? -1f : 1f), 0) * direction;
+            //     Physics.Raycast(transform.position, direction, out hit, 0.8f);    
+            // }
             if (hit.collider == null)
             {
                 direction = Quaternion.Euler(0, Time.deltaTime * rightLeftSpeed * (right ? -1f : 1f), 0) * direction;
-                Physics.Raycast(transform.position, direction, out hit, 0.8f);    
-            }
+                
+                newStart = (Quaternion.Euler(0, (right ? 90f : -90f), 0) * direction).normalized * 0.1f;            
+                
+                direction = Quaternion.Euler(0, (right ? -30f : 30f), 0) * direction;
+                
+                
+                state = myStates.Debugging;
+                
+                //newStart = new Vector3(transform.position.x + (right ? 0.1f : -0.1f), transform.position.y, transform.position.z);
+                //Physics.Raycast(newStart, direction, out hit, 0.8f);
+
+            }  
         }  
     }
     
